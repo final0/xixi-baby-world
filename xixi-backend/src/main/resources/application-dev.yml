@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/xixi_world?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: your_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      timeout: 3000ms
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: your_email@qq.com
+    password: your_smtp_auth_code
+    protocol: smtps
+    properties:
+      mail.smtp.ssl.enable: true
+      mail.smtp.auth: true
+  servlet:
+    multipart:
+      max-file-size: 520MB
+      max-request-size: 520MB
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: status
+      logic-delete-value: 0
+      logic-not-delete-value: 1
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: xixi-files
+
+jwt:
+  secret: xixi-world-secret-key-must-be-at-least-32-characters-long
+  expire: 604800
+
+ai:
+  api-key: your_deepseek_api_key
+  base-url: https://api.deepseek.com
+  model: deepseek-chat
