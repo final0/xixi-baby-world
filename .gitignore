@@ -1,0 +1,38 @@
+# Maven
+target/
+*.class
+*.jar
+*.war
+
+# IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+dist/
+.cache/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+application-prod.yml
+application-local.yml
+*.env
+.env*
+
+# Build artifacts
+xixi-backend/target/
+xixi-frontend/dist/
+xixi-frontend/.vite/
