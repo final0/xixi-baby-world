@@ -16,6 +16,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: true,          // 监听所有网卡（0.0.0.0）
+    allowedHosts: 'all', // 允许任意域名访问，适配云开发环境
     proxy: {
       '/api': { target: 'http://localhost:8080', changeOrigin: true }
     }
