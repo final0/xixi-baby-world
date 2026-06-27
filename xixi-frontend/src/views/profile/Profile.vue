@@ -5,7 +5,7 @@
       <div class="xixi-card">
         <h3 class="card-title">基本信息</h3>
         <div class="avatar-section">
-          <el-avatar :size="80" :src="form.avatarUrl" style="cursor:pointer" @click="avatarInput.click()">
+          <el-avatar :size="80" :src="form.avatarUrl" @click="avatarInput.click()">
             {{ form.nickname?.charAt(0) }}
           </el-avatar>
           <div>
@@ -24,6 +24,7 @@
               <el-option v-for="r in roles" :key="r.value" :label="r.label" :value="r.value" />
             </el-select>
           </el-form-item>
+          <el-form-item label="专属短句"><el-input :value="mottoMap[form.role]" disabled /></el-form-item>
         </el-form>
         <div style="display:flex;justify-content:flex-end;margin-top:12px">
           <el-button type="primary" :loading="saving" @click="handleSave">保存修改</el-button>
@@ -51,32 +52,58 @@ import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
 const avatarInput = ref(null)
-const saving = ref(false); const pwdSaving = ref(false)
+const saving = ref(false)
+const pwdSaving = ref(false)
 const form = ref({ username:'',nickname:'',email:'',phone:'',role:'',avatarUrl:'' })
 const pwdForm = ref({ oldPassword:'', newPassword:'' })
+
 const roles = [
-  { value:'dad',label:'👨 爸爸'},{value:'mom',label:'👩 妈妈'},
-  { value:'grandpa',label:'👴 爷爷'},{value:'grandma',label:'👵 奶奶'},
-  { value:'outerpa',label:'🧓 外公'},{value:'outerma',label:'👵 外婆'},
-  { value:'other',label:'❤️ 其他亲属'}
+  {value:'dad',label:'👨 爸爸'},{value:'mom',label:'👩 妈妈'},
+  {value:'grandpa',label:'👴 爷爷'},{value:'grandma',label:'👵 奶奶'},
+  {value:'outerpa',label:'🧓 外公'},{value:'outerma',label:'👵 外婆'},
+  {value:'other',label:'❤️ 其他亲属'}
 ]
-onMounted(async () => { const res = await getProfile(); const d = res.data; form.value = { username:d.username,nickname:d.nickname,email:d.email,phone:d.phone||'',role:d.role,avatarUrl:d.avatarUrl||'' } })
-async function handleAvatarChange(e) {
-  const file = e.target.files[0]; if (!file) return
-  const fd = new FormData(); fd.append('file', file)
-  const res = await uploadAvatar(fd); form.value.avatarUrl = res.data.avatarUrl
-  await userStore.refreshProfile(); ElMessage.success('头像更新成功 🌸')
+const mottoMap = {
+  dad:'爸爸最爱汐汐啦～',mom:'妈妈陪着汐汐一起长大 💕',
+  grandpa:'爷爷每天都想着汐汐呢～',grandma:'奶奶的心肝宝贝！',
+  outerpa:'外公最开心的事就是看见汐汐笑',outerma:'外婆的汐汐真棒！',
+  other:'我们都爱汐汐 🌸'
 }
+
+onMounted(async () => {
+  const res = await getProfile()
+  const d = res.data
+  form.value = { username:d.username, nickname:d.nickname, email:d.email, phone:d.phone||'', role:d.role, avatarUrl:d.avatarUrl||'' }
+})
+
+async function handleAvatarChange(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const fd = new FormData()
+  fd.append('file', file)
+  const res = await uploadAvatar(fd)
+  form.value.avatarUrl = res.data.avatarUrl
+  await userStore.refreshProfile()
+  ElMessage.success('头像更新成功 🌸')
+}
+
 async function handleSave() {
   saving.value = true
-  try { await updateProfile({ nickname: form.value.nickname, phone: form.value.phone, role: form.value.role }); await userStore.refreshProfile(); ElMessage.success('保存成功 💕') }
-  finally { saving.value = false }
+  try {
+    await updateProfile({ nickname: form.value.nickname, phone: form.value.phone, role: form.value.role })
+    await userStore.refreshProfile()
+    ElMessage.success('保存成功 💕')
+  } finally { saving.value = false }
 }
+
 async function handleChangePassword() {
   if (!pwdForm.value.oldPassword || !pwdForm.value.newPassword) return ElMessage.warning('请填写完整')
   pwdSaving.value = true
-  try { await changePassword(pwdForm.value); ElMessage.success('密码修改成功'); pwdForm.value = { oldPassword:'', newPassword:'' } }
-  finally { pwdSaving.value = false }
+  try {
+    await changePassword(pwdForm.value)
+    ElMessage.success('密码修改成功')
+    pwdForm.value = { oldPassword:'', newPassword:'' }
+  } finally { pwdSaving.value = false }
 }
 </script>
 

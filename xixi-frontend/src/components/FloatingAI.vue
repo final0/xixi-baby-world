@@ -45,10 +45,13 @@ const messagesRef = ref(null)
 
 const WELCOME = '我是汐汐小助手，你要干啊？😄'
 
-let sessionId = localStorage.getItem('xixi_ai_session')
-if (!sessionId) {
-  sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-  localStorage.setItem('xixi_ai_session', sessionId)
+function getSessionId() {
+  let id = localStorage.getItem('xixi_ai_session')
+  if (!id) {
+    id = Math.random().toString(36).substring(2) + Date.now().toString(36)
+    localStorage.setItem('xixi_ai_session', id)
+  }
+  return id
 }
 
 function toggleDrawer() {
@@ -71,7 +74,7 @@ async function sendMessage() {
   loading.value = true
   await scrollBottom()
   try {
-    const res = await chat(text, sessionId)
+    const res = await chat(text, getSessionId())
     messages.value.push({ role: 'assistant', content: res.data.reply })
   } catch (e) {
     messages.value.push({ role: 'assistant', content: '抱歉，我现在有点忙，稍后再试吧 🙈' })
@@ -82,9 +85,9 @@ async function sendMessage() {
 }
 
 async function clearChat() {
+  const sessionId = getSessionId()
   await clearSession(sessionId)
-  sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-  localStorage.setItem('xixi_ai_session', sessionId)
+  localStorage.removeItem('xixi_ai_session')
   messages.value = [{ role: 'assistant', content: WELCOME }]
 }
 
@@ -100,10 +103,10 @@ async function scrollBottom() {
   width: 56px; height: 56px;
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: 0 4px 16px rgba(233, 30, 122, 0.4);
+  cursor: pointer; box-shadow: 0 4px 16px rgba(233,30,122,0.4);
   z-index: 9999; transition: transform 0.2s, box-shadow 0.2s;
 }
-.ai-fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(233, 30, 122, 0.5); }
+.ai-fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(233,30,122,0.5); }
 .fab-icon { font-size: 24px; }
 .fab-dot { position: absolute; top: 4px; right: 4px; width: 10px; height: 10px; background: #ff4949; border-radius: 50%; border: 2px solid #fff; }
 .chat-container { display: flex; flex-direction: column; height: 100vh; }
@@ -120,6 +123,6 @@ async function scrollBottom() {
 .dot { width: 6px; height: 6px; background: var(--color-primary); border-radius: 50%; animation: bounce 1.2s infinite; }
 .dot:nth-child(2) { animation-delay: 0.2s; }
 .dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce { 0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; } 40% { transform: scale(1.2); opacity: 1; } }
+@keyframes bounce { 0%,80%,100%{transform:scale(0.8);opacity:0.5} 40%{transform:scale(1.2);opacity:1} }
 .chat-input { padding: 12px 16px; border-top: 1px solid var(--color-border); display: flex; gap: 8px; }
 </style>

@@ -2,7 +2,9 @@
   <el-container class="main-layout">
     <el-header class="top-header" height="64px">
       <div class="header-inner">
-        <div class="logo" @click="$router.push('/')">🌸 汐汐的小窝</div>
+        <div class="logo" @click="$router.push('/')">
+          🌸 汐汐的小窝
+        </div>
         <el-menu mode="horizontal" :default-active="activeMenu" class="nav-menu"
           :ellipsis="false" @select="handleMenuSelect">
           <el-menu-item index="/">🏠 首页</el-menu-item>
@@ -52,6 +54,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const activeMenu = computed(() => '/' + route.path.split('/')[1])
+
 function handleMenuSelect(index) { router.push(index) }
 
 async function handleLogout() {
@@ -74,16 +77,10 @@ async function handleLogout() {
   max-width: 1200px; margin: 0 auto; height: 100%;
   display: flex; align-items: center; padding: 0 16px; gap: 24px;
 }
-.logo { font-size: 20px; font-weight: 700; color: var(--color-primary-dark); cursor: pointer; white-space: nowrap; }
-.nav-menu { flex: 1; border-bottom: none !important;
-  --el-menu-active-color: var(--color-primary-dark);
-  --el-menu-hover-text-color: var(--color-primary-dark);
-}
+.logo { font-size: 20px; font-weight: 700; color: var(--color-primary-dark); cursor: pointer; white-space: nowrap; letter-spacing: 1px; }
+.nav-menu { flex: 1; border-bottom: none !important; --el-menu-active-color: var(--color-primary-dark); --el-menu-hover-text-color: var(--color-primary-dark); }
 .header-right { margin-left: auto; }
-.user-avatar {
-  display: flex; align-items: center; gap: 8px; cursor: pointer;
-  padding: 4px 8px; border-radius: 20px; transition: background 0.2s;
-}
+.user-avatar { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: 20px; transition: background 0.2s; }
 .user-avatar:hover { background: var(--color-primary-light); }
 .nickname { font-size: 14px; color: var(--color-text); }
 .main-content { padding: 0; min-height: calc(100vh - 64px); }

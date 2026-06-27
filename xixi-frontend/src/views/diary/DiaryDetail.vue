@@ -29,15 +29,25 @@ import { useUserStore } from '@/stores/user'
 import { getDiary, deleteDiary } from '@/api/diary'
 import { ElMessageBox, ElMessage } from 'element-plus'
 
-const route = useRoute(); const router = useRouter(); const userStore = useUserStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const diary = ref(null)
 const moodEmoji = { happy: '😊', excited: '🎉', peaceful: '😌', tired: '😴' }
-const moodLabel = { happy: '开心', excited: '兴奋', peaceful: '平静', tired: '疲惫' }
-const canEdit = computed(() => { if (!diary.value) return false; return userStore.isAdmin || diary.value.authorId === userStore.userInfo?.userId })
-onMounted(async () => { const res = await getDiary(route.params.id); diary.value = res.data })
+const moodLabel = { happy: '开心', excited: '兴奋', peaceful: '平静', tired: '疲惴' }
+
+const canEdit = computed(() => diary.value && (userStore.isAdmin || diary.value.authorId === userStore.userInfo?.userId))
+
+onMounted(async () => {
+  const res = await getDiary(route.params.id)
+  diary.value = res.data
+})
+
 async function handleDelete() {
   await ElMessageBox.confirm('确定删除这篇日记吗？', '提示', { type: 'warning' })
-  await deleteDiary(diary.value.id); ElMessage.success('已删除'); router.push('/diary')
+  await deleteDiary(diary.value.id)
+  ElMessage.success('已删除')
+  router.push('/diary')
 }
 </script>
 

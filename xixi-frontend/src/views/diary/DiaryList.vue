@@ -1,6 +1,9 @@
 <template>
   <div class="page-container">
-    <div class="page-header"><h1>📝 成长日记</h1><el-button type="primary" @click="$router.push('/diary/create')">写日记</el-button></div>
+    <div class="page-header">
+      <h1>📝 成长日记</h1>
+      <el-button type="primary" @click="$router.push('/diary/create')">写日记</el-button>
+    </div>
     <div class="filter-bar">
       <el-date-picker v-model="filterMonth" type="month" value-format="YYYY-MM" placeholder="按月份筛选" clearable @change="loadDiaries" style="width:180px" />
     </div>
@@ -19,7 +22,9 @@
       </div>
     </div>
     <el-empty v-else description="还没有日记，快来记录第一篇吧 📝" />
-    <div class="pagination" v-if="total > pageSize"><el-pagination v-model:current-page="currentPage" :page-size="pageSize" :total="total" layout="prev, pager, next" @current-change="loadDiaries" /></div>
+    <div class="pagination" v-if="total > pageSize">
+      <el-pagination v-model:current-page="currentPage" :page-size="pageSize" :total="total" layout="prev, pager, next" @current-change="loadDiaries" />
+    </div>
   </div>
 </template>
 
@@ -33,8 +38,20 @@ const currentPage = ref(1)
 const pageSize = 10
 const filterMonth = ref('')
 const moodEmoji = { happy: '😊', excited: '🎉', peaceful: '😌', tired: '😴' }
-function stripHtml(html) { const d = document.createElement('div'); d.innerHTML = html; const t = d.textContent || ''; return t.length > 120 ? t.substring(0, 120) + '...' : t }
-async function loadDiaries() { const res = await listDiaries(currentPage.value, pageSize, filterMonth.value || undefined); diaries.value = res.data.list; total.value = res.data.total }
+
+function stripHtml(html) {
+  const div = document.createElement('div')
+  div.innerHTML = html
+  const text = div.textContent || div.innerText || ''
+  return text.length > 120 ? text.substring(0, 120) + '...' : text
+}
+
+async function loadDiaries() {
+  const res = await listDiaries(currentPage.value, pageSize, filterMonth.value || undefined)
+  diaries.value = res.data.list
+  total.value = res.data.total
+}
+
 onMounted(loadDiaries)
 </script>
 
