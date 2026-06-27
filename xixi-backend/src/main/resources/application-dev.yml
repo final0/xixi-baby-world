@@ -14,12 +14,17 @@ spring:
   mail:
     host: smtp.qq.com
     port: 465
-    username: your_email@qq.com
-    password: your_smtp_auth_code
+    username: 2976737985@qq.com
+    password: owvsrdcwlcyfdfea
     protocol: smtps
+    default-encoding: UTF-8
     properties:
       mail.smtp.ssl.enable: true
+      mail.smtp.ssl.required: true
       mail.smtp.auth: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
   servlet:
     multipart:
       max-file-size: 520MB
