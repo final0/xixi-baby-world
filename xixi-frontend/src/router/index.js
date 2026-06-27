@@ -2,39 +2,40 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const routes = [
-  { path: '/login', component: () => import('@/layouts/AuthLayout.vue'),
-    children: [{ path: '', name: 'Login', component: () => import('@/views/auth/Login.vue') }] },
-  { path: '/register', component: () => import('@/layouts/AuthLayout.vue'),
-    children: [{ path: '', name: 'Register', component: () => import('@/views/auth/Register.vue') }] },
-  { path: '/role-select', name: 'RoleSelect', component: () => import('@/views/auth/RoleSelect.vue'), meta: { requiresAuth: true } },
+  { path: '/login',       component: () => import('@/views/auth/Login.vue'),      meta: { guest: true } },
+  { path: '/register',    component: () => import('@/views/auth/Register.vue'),   meta: { guest: true } },
+  { path: '/role-select', component: () => import('@/views/auth/RoleSelect.vue'), meta: { auth: true } },
   {
     path: '/',
     component: () => import('@/layouts/MainLayout.vue'),
-    meta: { requiresAuth: true },
+    meta: { auth: true },
     children: [
-      { path: '', name: 'Home', component: () => import('@/views/home/Home.vue') },
-      { path: 'photos', name: 'Photos', component: () => import('@/views/media/PhotoWall.vue') },
-      { path: 'videos', name: 'Videos', component: () => import('@/views/media/VideoList.vue') },
-      { path: 'diary', name: 'DiaryList', component: () => import('@/views/diary/Diary.vue') },
-      { path: 'diary/create', name: 'DiaryCreate', component: () => import('@/views/diary/DiaryEdit.vue') },
-      { path: 'diary/:id', name: 'DiaryDetail', component: () => import('@/views/diary/DiaryDetail.vue') },
-      { path: 'diary/:id/edit', name: 'DiaryEdit', component: () => import('@/views/diary/DiaryEdit.vue') },
-      { path: 'profile', name: 'Profile', component: () => import('@/views/profile/Profile.vue') },
-      { path: 'admin', name: 'Admin', component: () => import('@/views/admin/AdminPanel.vue'), meta: { requiresAdmin: true } }
+      { path: '',               component: () => import('@/views/home/Home.vue') },
+      { path: 'photos',         component: () => import('@/views/media/PhotoWall.vue') },
+      { path: 'videos',         component: () => import('@/views/media/VideoList.vue') },
+      { path: 'diary',          component: () => import('@/views/diary/DiaryList.vue') },
+      { path: 'diary/create',   component: () => import('@/views/diary/DiaryEdit.vue') },
+      { path: 'diary/:id',      component: () => import('@/views/diary/DiaryDetail.vue') },
+      { path: 'diary/:id/edit', component: () => import('@/views/diary/DiaryEdit.vue') },
+      { path: 'profile',        component: () => import('@/views/profile/Profile.vue') },
+      { path: 'admin',          component: () => import('@/views/admin/AdminPanel.vue'), meta: { admin: true } },
     ]
   },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
-const router = createRouter({ history: createWebHistory(), routes, scrollBehavior: () => ({ top: 0 }) })
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+  scrollBehavior: () => ({ top: 0 })
+})
 
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
-  document.title = to.meta.title ? `${to.meta.title} - 汐汐的小窝 🌸` : '汐汐的小窝 🌸'
-  if (to.meta.requiresAuth && !userStore.isLoggedIn) { next('/login'); return }
-  if (to.meta.requiresAdmin && !userStore.isAdmin) { next('/'); return }
-  if (userStore.isLoggedIn && userStore.isFirstLogin && to.name !== 'RoleSelect' && to.name !== 'Login') { next('/role-select'); return }
-  if (userStore.isLoggedIn && (to.name === 'Login' || to.name === 'Register')) { next('/'); return }
+  userStore.initFromStorage()
+  if (to.meta.auth && !userStore.isLoggedIn) return next('/login')
+  if (to.meta.guest && userStore.isLoggedIn) return next('/')
+  if (to.meta.admin && !userStore.isAdmin) return next('/')
   next()
 })
 

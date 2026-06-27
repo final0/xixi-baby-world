@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [
     vue(),
     AutoImport({ resolvers: [ElementPlusResolver()] }),
-    Components({ resolvers: [ElementPlusResolver()] })
+    Components({ resolvers: [ElementPlusResolver()] }),
   ],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) }
@@ -17,10 +17,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true
-      }
+      '/api': { target: 'http://localhost:8080', changeOrigin: true }
     }
   }
 })

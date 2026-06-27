@@ -1,37 +1,63 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { userApi } from '@/api'
+import { getProfile } from '@/api/user'
+import { logout as logoutApi } from '@/api/auth'
 
 export const useUserStore = defineStore('user', () => {
-  const userInfo = ref(JSON.parse(localStorage.getItem('xixi_user') || 'null'))
-  const token = ref(localStorage.getItem('xixi_token') || '')
+  const token = ref(null)
+  const userInfo = ref(null)
+
   const isLoggedIn = computed(() => !!token.value)
   const isAdmin = computed(() => userInfo.value?.isAdmin === true)
   const isFirstLogin = computed(() => userInfo.value?.firstLogin === true)
 
+  function initFromStorage() {
+    token.value = localStorage.getItem('xixi_token')
+    const stored = localStorage.getItem('xixi_user')
+    if (stored) {
+      try { userInfo.value = JSON.parse(stored) } catch (e) {}
+    }
+  }
+
   function setLoginData(data) {
     token.value = data.token
-    userInfo.value = { userId: data.userId, nickname: data.nickname, role: data.role,
-      roleMotto: data.roleMotto, avatarUrl: data.avatarUrl, firstLogin: data.firstLogin, isAdmin: data.isAdmin }
     localStorage.setItem('xixi_token', data.token)
-    localStorage.setItem('xixi_user', JSON.stringify(userInfo.value))
+    const info = {
+      userId: data.userId,
+      nickname: data.nickname,
+      role: data.role,
+      roleMotto: data.roleMotto,
+      avatarUrl: data.avatarUrl,
+      firstLogin: data.firstLogin,
+      isAdmin: data.isAdmin,
+    }
+    userInfo.value = info
+    localStorage.setItem('xixi_user', JSON.stringify(info))
   }
 
-  function updateUserInfo(data) {
-    userInfo.value = { ...userInfo.value, ...data }
-    localStorage.setItem('xixi_user', JSON.stringify(userInfo.value))
+  async function refreshProfile() {
+    const res = await getProfile()
+    const info = {
+      userId: res.data.id,
+      nickname: res.data.nickname,
+      role: res.data.role,
+      roleMotto: res.data.roleMotto,
+      avatarUrl: res.data.avatarUrl,
+      firstLogin: false,
+      isAdmin: res.data.isAdmin,
+    }
+    userInfo.value = info
+    localStorage.setItem('xixi_user', JSON.stringify(info))
   }
 
-  function logout() {
-    token.value = ''
+  async function logout() {
+    try { await logoutApi() } catch (e) {}
+    token.value = null
     userInfo.value = null
     localStorage.removeItem('xixi_token')
     localStorage.removeItem('xixi_user')
   }
 
-  async function fetchProfile() {
-    try { const res = await userApi.getProfile(); updateUserInfo(res.data) } catch {}
-  }
-
-  return { userInfo, token, isLoggedIn, isAdmin, isFirstLogin, setLoginData, updateUserInfo, logout, fetchProfile }
+  return { token, userInfo, isLoggedIn, isAdmin, isFirstLogin,
+           initFromStorage, setLoginData, refreshProfile, logout }
 })
