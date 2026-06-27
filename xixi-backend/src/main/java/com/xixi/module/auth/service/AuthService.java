@@ -11,6 +11,7 @@ import com.xixi.util.JwtUtil;
 import com.xixi.util.RedisKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -31,6 +32,10 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final CaptchaUtil captchaUtil;
 
+    /** 读取配置文件中的发件人地址 */
+    @Value("${spring.mail.username}")
+    private String mailFrom;
+
     public AuthDto.CaptchaResponse generateCaptcha() {
         CaptchaUtil.CaptchaResult result = captchaUtil.generate();
         redisTemplate.opsForValue().set(RedisKeys.captcha(result.captchaId()), result.answer(), 3, TimeUnit.MINUTES);
@@ -44,7 +49,8 @@ public class AuthService {
         String code = String.format("%06d", new Random().nextInt(1000000));
         redisTemplate.opsForValue().set(RedisKeys.emailCode(email), code, 5, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(RedisKeys.emailLimit(email), "1", 60, TimeUnit.SECONDS);
-        sendMail(email, "【汐汐的小窝】注册验证码", "您的注册验证码为：" + code + "，5分钟内有效。请勿泄露给他人 💕");
+        sendMail(email, "【汐汐的小窝】注册验证码",
+                "您的注册验证码为：" + code + "，5分钟内有效。请勿泄露给他人 💕");
     }
 
     public void register(AuthDto.RegisterRequest req) {
@@ -75,7 +81,7 @@ public class AuthService {
         String failKey = RedisKeys.loginFail(req.getUsername());
         String failCount = redisTemplate.opsForValue().get(failKey);
         if (failCount != null && Integer.parseInt(failCount) >= 5)
-            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS.getCode(), "登录失败次数过多，账号已锁內15分钟");
+            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS.getCode(), "登录失败次数过多，账号已锁定15分钟");
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             redisTemplate.opsForValue().increment(failKey);
             redisTemplate.expire(failKey, 15, TimeUnit.MINUTES);
@@ -96,8 +102,15 @@ public class AuthService {
     private void sendMail(String to, String subject, String text) {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(to); msg.setSubject(subject); msg.setText(text);
+            msg.setFrom(mailFrom);   // ← 修复：必须显式设置发件人，否则 QQ SMTP 拒绝
+            msg.setTo(to);
+            msg.setSubject(subject);
+            msg.setText(text);
             mailSender.send(msg);
-        } catch (Exception e) { log.error("邮件发送失败: to={}, error={}", to, e.getMessage()); }
+            log.info("邮件发送成功: to={}", to);
+        } catch (Exception e) {
+            log.error("邮件发送失败: to={}, error={}", to, e.getMessage(), e);
+            throw new BusinessException("邮件发送失败，请检查邮件配置: " + e.getMessage());
+        }
     }
 }
